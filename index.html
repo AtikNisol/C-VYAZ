@@ -1,102 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>C-Vyaz</title>
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            overflow: hidden;
-            background-color: white;
-        }
-        body {
-            min-height: 100vh;
-            min-width: 100vw;
-            overflow: hidden;
-        }
-        .center-logos {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            width: 100vw;
-            box-sizing: border-box;
-        }
-        .center-logos-inner {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 1080px;
-            height: 1920px;
-            position: relative;
-        }
-        .logo {
-            width: 1080px;
-            height: 960px;
-            object-fit: contain;
-            display: block;
-            transition: opacity 0.5s ease-in-out;
-        }
-        .hidden {
-            opacity: 0;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+  <title>C-Vyaz</title>
+  <link rel="preload" as="image" href="1upper.gif">
+  <link rel="preload" as="image" href="2down.gif">
+  <link rel="preload" as="image" href="1upper.png">
+  <link rel="preload" as="image" href="2down.png">
+  <style>
+    html,body {
+      height:100%;margin:0;padding:0;overflow:hidden;
+      background:#fff;box-sizing:border-box;
+    }
+    .center-logos {
+      display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      height:100vh;width:100vw;
+    }
+    .center-logos-inner {
+      width:1080px;height:1920px;
+      display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      position:relative;
+      transform-origin:center center;
+    }
+    .logo-wrap {
+      position:relative;width:1080px;height:960px;
+    }
+    .logo-img {
+      position:absolute;top:0;left:0;width:100%;height:100%;
+      object-fit:contain;display:block;
+      transition:opacity 0.45s ease;
+      backface-visibility:hidden;
+    }
+    .logo-img.gif {z-index:2;opacity:1;}
+    .logo-img.png {z-index:1;opacity:0;} /* pre-rendered but invisible */
+    a.logo-link {display:block;padding:0;margin:0;border:none;outline:none;}
+  </style>
 </head>
 <body>
-    <div class="center-logos">
-        <div class="center-logos-inner" id="logos-inner">
-            <img id="upperGif" class="logo" src="1upper.gif" alt="Upper animation">
-            <img id="upperPng" class="logo hidden" src="1upper.png" alt="Upper logo">
-
-            <a href="https://t.me/trust_musicvideo" target="_blank" style="display:block;outline:none;border:none;padding:0;margin:0;">
-                <img id="lowerGif" class="logo" src="2down.gif" alt="Lower animation">
-                <img id="lowerPng" class="logo hidden" src="2down.png" alt="Lower logo">
-            </a>
+  <div class="center-logos">
+    <div class="center-logos-inner" id="logos-inner">
+      <div class="logo-wrap">
+        <img id="upperGif" class="logo-img gif" src="1upper.gif" width="1080" height="960" alt="">
+        <img id="upperPng" class="logo-img png" src="1upper.png" width="1080" height="960" alt="">
+      </div>
+      <a class="logo-link" href="https://t.me/trust_musicvideo" target="_blank" rel="noopener">
+        <div class="logo-wrap">
+          <img id="lowerGif" class="logo-img gif" src="2down.gif" width="1080" height="960" alt="">
+          <img id="lowerPng" class="logo-img png" src="2down.png" width="1080" height="960" alt="">
         </div>
+      </a>
     </div>
+  </div>
 
-    <script>
-        function scaleLogos() {
-            const container = document.getElementById('logos-inner');
-            const naturalWidth = 1080;
-            const naturalHeight = 960 * 2;
-            const vw = window.innerWidth * 0.98;
-            const vh = window.innerHeight * 0.98;
-            const scale = Math.min(vw / naturalWidth, vh / naturalHeight, 1);
-            container.style.transform = `scale(${scale})`;
-            container.style.transformOrigin = 'center center';
-            container.parentElement.style.height = '100vh';
-            container.parentElement.style.display = 'flex';
-            container.parentElement.style.alignItems = 'center';
-            container.parentElement.style.justifyContent = 'center';
+  <script>
+    function scaleLogos() {
+      const c = document.getElementById('logos-inner');
+      const scale = Math.min(
+        (window.innerWidth*0.98)/1080,
+        (window.innerHeight*0.98)/(960*2),
+        1
+      );
+      c.style.transform = `scale(${scale})`;
+      c.parentElement.style.display='flex';
+      c.parentElement.style.alignItems='center';
+      c.parentElement.style.justifyContent='center';
+    }
+
+    function imgReady(img) {
+      return new Promise(res=>{
+        if(img.complete && img.naturalWidth) res();
+        else {
+          img.addEventListener('load',res,{once:true});
+          img.addEventListener('error',res,{once:true});
         }
+      });
+    }
 
-        // Replace GIFs with PNGs after 3 seconds
-        function replaceGifs() {
-            const upperGif = document.getElementById('upperGif');
-            const upperPng = document.getElementById('upperPng');
-            const lowerGif = document.getElementById('lowerGif');
-            const lowerPng = document.getElementById('lowerPng');
+    function crossfade() {
+      const uGif=document.getElementById('upperGif'),
+            lGif=document.getElementById('lowerGif'),
+            uPng=document.getElementById('upperPng'),
+            lPng=document.getElementById('lowerPng');
 
-            setTimeout(() => {
-                upperGif.classList.add('hidden');
-                lowerGif.classList.add('hidden');
-                upperPng.classList.remove('hidden');
-                lowerPng.classList.remove('hidden');
-            }, 3000); // 3 seconds = GIF length
-        }
+      // Instantly begin PNG opacity rise (~6ms)
+      uPng.style.transition='opacity 0.006s linear';
+      lPng.style.transition='opacity 0.006s linear';
+      uPng.style.opacity='1';
+      lPng.style.opacity='1';
 
-        window.addEventListener('resize', scaleLogos);
-        window.addEventListener('DOMContentLoaded', () => {
-            scaleLogos();
-            replaceGifs();
-        });
-    </script>
+      // Wait those ~6ms, then hide GIFs (so fade looks seamless)
+      setTimeout(()=>{
+        uGif.style.opacity='0';
+        lGif.style.opacity='0';
+        setTimeout(()=>{
+          uGif.style.display='none';
+          lGif.style.display='none';
+        },60); // let transition finish
+      },6);
+    }
+
+    window.addEventListener('DOMContentLoaded',()=>{
+      scaleLogos();
+
+      const gifs=[upperGif,lowerGif].map(imgReady);
+      const pngs=[upperPng,lowerPng].map(imgReady);
+
+      Promise.all([...gifs,...pngs]).then(()=>{
+        // Wait 3s for gif animation length, then swap
+        setTimeout(crossfade,3000);
+      });
+
+      window.addEventListener('resize',scaleLogos);
+    });
+  </script>
 </body>
 </html>
