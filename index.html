@@ -2,17 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>C-Vyaz</title>
     <style>
         html, body {
             height: 100%;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+            overflow: hidden;
         }
         body {
             min-height: 100vh;
             min-width: 100vw;
+            overflow: hidden;
         }
         .center-videos {
             display: flex;
@@ -42,34 +45,68 @@
 <body>
             <div class="center-videos">
                 <div class="center-videos-inner" id="videos-inner">
-                            <video src="1upper.mp4" autoplay muted></video>
-                            <a href="https://t.me/trust_musicvideo" target="_blank" style="display:block;outline:none;border:none;padding:0;margin:0;">
-                                <video src="2down.mp4" autoplay muted style="pointer-events: none;"></video>
-                                <span style="position:absolute;left:-9999px;">Go to Telegram channel</span>
-                            </a>
+                                    <video id="video1" src="1upper.mp4" autoplay muted playsinline></video>
+                                    <a href="https://t.me/trust_musicvideo" target="_blank" style="display:block;outline:none;border:none;padding:0;margin:0;">
+                                        <video id="video2" src="2down.mp4" autoplay muted playsinline style="pointer-events: none;"></video>
+                                        <span style="position:absolute;left:-9999px;">Go to Telegram channel</span>
+                                    </a>
                 </div>
             </div>
             <script>
-                        function scaleVideos() {
-                            const container = document.getElementById('videos-inner');
-                            // Natural size of both videos stacked: width 1080, height 1920
-                            const naturalWidth = 1080;
-                            const naturalHeight = 960 * 2;
-                            // Use 98% of viewport for both width and height (1% margin each side)
-                            const vw = window.innerWidth * 0.98;
-                            const vh = window.innerHeight * 0.98;
-                            // Calculate scale to fit both width and height
-                            const scale = Math.min(vw / naturalWidth, vh / naturalHeight, 1);
-                            container.style.transform = `scale(${scale})`;
-                            container.style.transformOrigin = 'center center';
-                            // Center the container
-                            container.parentElement.style.height = '100vh';
-                            container.parentElement.style.display = 'flex';
-                            container.parentElement.style.alignItems = 'center';
-                            container.parentElement.style.justifyContent = 'center';
-                        }
-                        window.addEventListener('resize', scaleVideos);
-                        window.addEventListener('DOMContentLoaded', scaleVideos);
+                                function scaleVideos() {
+                                    const container = document.getElementById('videos-inner');
+                                    // Natural size of both videos stacked: width 1080, height 1920
+                                    const naturalWidth = 1080;
+                                    const naturalHeight = 960 * 2;
+                                    // Use 98% of viewport for both width and height (1% margin each side)
+                                    const vw = window.innerWidth * 0.98;
+                                    const vh = window.innerHeight * 0.98;
+                                    // Calculate scale to fit both width and height
+                                    const scale = Math.min(vw / naturalWidth, vh / naturalHeight, 1);
+                                    container.style.transform = `scale(${scale})`;
+                                    container.style.transformOrigin = 'center center';
+                                    // Center the container
+                                    container.parentElement.style.height = '100vh';
+                                    container.parentElement.style.display = 'flex';
+                                    container.parentElement.style.alignItems = 'center';
+                                    container.parentElement.style.justifyContent = 'center';
+                                }
+
+                                // Ensure scaling after videos are loaded
+                                function ensureScalingAfterVideosLoaded() {
+                                    const v1 = document.getElementById('video1');
+                                    const v2 = document.getElementById('video2');
+                                    let loaded = 0;
+                                    function tryScale() {
+                                        loaded++;
+                                        if (loaded === 2) {
+                                            setTimeout(scaleVideos, 50); // slight delay for rendering
+                                        }
+                                    }
+                                    v1.addEventListener('loadedmetadata', tryScale);
+                                    v2.addEventListener('loadedmetadata', tryScale);
+                                }
+
+                                // Try to force autoplay on iOS/Safari
+                                function forceAutoplay() {
+                                    const v1 = document.getElementById('video1');
+                                    const v2 = document.getElementById('video2');
+                                    v1.muted = true;
+                                    v2.muted = true;
+                                    v1.playsInline = true;
+                                    v2.playsInline = true;
+                                    v1.autoplay = true;
+                                    v2.autoplay = true;
+                                    v1.play().catch(()=>{});
+                                    v2.play().catch(()=>{});
+                                }
+
+                                window.addEventListener('resize', scaleVideos);
+                                window.addEventListener('DOMContentLoaded', () => {
+                                    scaleVideos();
+                                    ensureScalingAfterVideosLoaded();
+                                    forceAutoplay();
+                                });
             </script>
 </body>
 </html>
