@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C-Vyaz</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            min-height: 100vh;
+            min-width: 100vw;
+        }
+        .center-videos {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
+            box-sizing: border-box;
+        }
+        .center-videos-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 1080px;
+            height: 1920px;
+        }
+        .center-videos video {
+            width: 1080px;
+            height: 960px;
+            object-fit: contain;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+            <div class="center-videos">
+                <div class="center-videos-inner" id="videos-inner">
+                            <video src="1upper.mp4" autoplay muted></video>
+                            <a href="https://t.me/trust_musicvideo" target="_blank" style="display:block;outline:none;border:none;padding:0;margin:0;">
+                                <video src="2down.mp4" autoplay muted style="pointer-events: none;"></video>
+                                <span style="position:absolute;left:-9999px;">Go to Telegram channel</span>
+                            </a>
+                </div>
+            </div>
+            <script>
+                        function scaleVideos() {
+                            const container = document.getElementById('videos-inner');
+                            // Natural size of both videos stacked: width 1080, height 1920
+                            const naturalWidth = 1080;
+                            const naturalHeight = 960 * 2;
+                            // Use 98% of viewport for both width and height (1% margin each side)
+                            const vw = window.innerWidth * 0.98;
+                            const vh = window.innerHeight * 0.98;
+                            // Calculate scale to fit both width and height
+                            const scale = Math.min(vw / naturalWidth, vh / naturalHeight, 1);
+                            container.style.transform = `scale(${scale})`;
+                            container.style.transformOrigin = 'center center';
+                            // Center the container
+                            container.parentElement.style.height = '100vh';
+                            container.parentElement.style.display = 'flex';
+                            container.parentElement.style.alignItems = 'center';
+                            container.parentElement.style.justifyContent = 'center';
+                        }
+                        window.addEventListener('resize', scaleVideos);
+                        window.addEventListener('DOMContentLoaded', scaleVideos);
+            </script>
+</body>
+</html>
