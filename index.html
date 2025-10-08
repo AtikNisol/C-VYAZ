@@ -68,7 +68,7 @@
   }
 
   .gif { z-index: 2; opacity: 1; }
-  .png { z-index: 1; opacity: 0; }
+  .png { z-index: 1; opacity: 0; transition: opacity 0.5s linear; } /* smooth fade */
   #upperPng { pointer-events: none; }
 
   a.logo-link { display: block; padding: 0; margin: 0; border: none; outline: none; }
@@ -80,14 +80,14 @@
   <div class="logos-inner" id="logos-inner">
     <!-- Upper logo -->
     <div class="logo-wrap">
-      <img id="upperGif" class="logo-img gif" src="1upper.gif" alt="Upper animation">
+      <img id="upperGif" class="logo-img gif" src="1upperlong.gif" alt="Upper animation">
       <img id="upperPng" class="logo-img png" src="1upper.png" alt="Upper logo">
     </div>
 
     <!-- Lower logo (clickable) -->
     <a class="logo-link" href="https://t.me/trust_musicvideo" target="_blank" rel="noopener">
       <div class="logo-wrap lower-wrap">
-        <img id="lowerGif" class="logo-img gif" src="2down.gif" alt="Lower animation">
+        <img id="lowerGif" class="logo-img gif" src="2downlong.gif" alt="Lower animation">
         <img id="lowerPng" class="logo-img png" src="2down.png" alt="Lower logo">
       </div>
     </a>
@@ -103,7 +103,6 @@ function scaleLogos() {
   const scale = Math.min((viewportWidth * 0.98) / 1080, (viewportHeight * 0.98) / 1920, 1);
   container.style.transform = `scale(${scale})`;
 
-  // Adjust offset to scale proportionally
   const lowerWrap = document.querySelector('.lower-wrap');
   lowerWrap.style.transform = `translateY(${-100 * scale}px)`;
 }
@@ -123,26 +122,31 @@ function crossfade() {
   const uPng = document.getElementById('upperPng');
   const lPng = document.getElementById('lowerPng');
 
-  uPng.style.transition = 'opacity 0.1s linear';
-  lPng.style.transition = 'opacity 0.1s linear';
+  // Fade PNGs in between 3.0s and 3.5s
+  uPng.style.transition = 'opacity 0.5s linear';
+  lPng.style.transition = 'opacity 0.5s linear';
   uPng.style.opacity = '1';
   lPng.style.opacity = '1';
 
+  // Fade GIFs out simultaneously
   setTimeout(() => {
+    uGif.style.transition = 'opacity 0.3s linear';
+    lGif.style.transition = 'opacity 0.3s linear';
     uGif.style.opacity = '0';
     lGif.style.opacity = '0';
     setTimeout(() => {
       uGif.style.display = 'none';
       lGif.style.display = 'none';
-    }, 120);
-  }, 100);
+    }, 400);
+  }, 200);
 }
 
 window.addEventListener('DOMContentLoaded', () => {
   preloadPNGs();
   scaleLogos();
 
-  setTimeout(crossfade, 2900);
+  // Trigger crossfade at 3.0 seconds (for 4s total duration)
+  setTimeout(crossfade, 3000);
 
   window.addEventListener('resize', scaleLogos);
   if (window.visualViewport) {
