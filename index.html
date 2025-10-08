@@ -25,8 +25,9 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
-    width: 100vw;
+    height: 100%;
+    width: 100%;
+    overflow: visible; /* prevent mobile clipping */
   }
 
   .center-logos-inner {
@@ -44,6 +45,8 @@
     position: relative;
     width: 1080px;
     height: 960px;
+    margin: 0;
+    padding: 0;
   }
 
   .logo-img {
@@ -88,9 +91,13 @@
 <script>
 function scaleLogos() {
   const container = document.getElementById('logos-inner');
+  // Use visualViewport if available for mobile browsers
+  const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  const viewportWidth = window.innerWidth;
+
   const scale = Math.min(
-    (window.innerWidth*0.98)/1080,
-    (window.innerHeight*0.98)/(960*2),
+    (viewportWidth * 0.98)/1080,
+    (viewportHeight * 0.98)/1920, // total stacked height
     1
   );
   container.style.transform = `scale(${scale})`;
@@ -99,30 +106,29 @@ function scaleLogos() {
   container.parentElement.style.justifyContent = 'center';
 }
 
-// Ensure PNGs are loaded before fade to prevent flash
+// Preload PNGs to prevent flash
 function preloadPNGs() {
   const imgs = [document.getElementById('upperPng'), document.getElementById('lowerPng')];
   imgs.forEach(img=>{
-    if (!img.complete) {
+    if(!img.complete) {
       const tmp = new Image();
       tmp.src = img.src;
     }
   });
 }
 
+// Fade PNGs in and hide GIFs
 function crossfade() {
   const uGif = document.getElementById('upperGif');
   const lGif = document.getElementById('lowerGif');
   const uPng = document.getElementById('upperPng');
   const lPng = document.getElementById('lowerPng');
 
-  // Fade-in PNGs over 100ms
   uPng.style.transition = 'opacity 0.1s linear';
   lPng.style.transition = 'opacity 0.1s linear';
   uPng.style.opacity = '1';
   lPng.style.opacity = '1';
 
-  // Hide GIFs after fade
   setTimeout(()=>{
     uGif.style.opacity = '0';
     lGif.style.opacity = '0';
@@ -137,10 +143,14 @@ window.addEventListener('DOMContentLoaded', ()=>{
   scaleLogos();
   preloadPNGs();
 
-  // Start crossfade timer immediately
+  // Start crossfade timer immediately (2.9s)
   setTimeout(crossfade, 2900);
 
+  // Also scale on resize
   window.addEventListener('resize', scaleLogos);
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', scaleLogos);
+  }
 });
 </script>
 </body>
