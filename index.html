@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>C-Vyaz</title>
 
-<!-- Preload only PNGs -->
+<!-- Preload PNGs -->
 <link rel="preload" as="image" href="1upper.png">
 <link rel="preload" as="image" href="2down.png">
 
@@ -13,11 +13,12 @@
   *, *::before, *::after { box-sizing: border-box; }
 
   html, body {
-    height: 100%;
     margin: 0;
     padding: 0;
-    overflow: hidden;
+    height: 100%;
+    width: 100%;
     background-color: white;
+    overflow: hidden;
   }
 
   .center-logos {
@@ -27,12 +28,12 @@
     justify-content: center;
     height: 100%;
     width: 100%;
-    overflow: visible; /* prevent mobile clipping */
+    overflow: visible;
   }
 
-  .center-logos-inner {
+  .logos-inner {
     width: 1080px;
-    height: 1920px;
+    height: 1920px; /* stacked GIFs: 2x 960 */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -61,8 +62,8 @@
     will-change: opacity;
   }
 
-  .logo-img.gif { z-index: 2; opacity: 1; }
-  .logo-img.png { z-index: 1; opacity: 0; }
+  .gif { z-index: 2; opacity: 1; }
+  .png { z-index: 1; opacity: 0; }
   #upperPng { pointer-events: none; }
 
   a.logo-link { display: block; padding: 0; margin: 0; border: none; outline: none; }
@@ -71,18 +72,18 @@
 
 <body>
 <div class="center-logos">
-  <div class="center-logos-inner" id="logos-inner">
+  <div class="logos-inner" id="logos-inner">
     <!-- Upper logo -->
     <div class="logo-wrap">
-      <img id="upperGif" class="logo-img gif" src="1upper.gif" width="1080" height="960" alt="Upper animation">
-      <img id="upperPng" class="logo-img png" src="1upper.png" width="1080" height="960" alt="Upper logo">
+      <img id="upperGif" class="logo-img gif" src="1upper.gif" alt="Upper animation">
+      <img id="upperPng" class="logo-img png" src="1upper.png" alt="Upper logo">
     </div>
 
     <!-- Lower logo (clickable) -->
     <a class="logo-link" href="https://t.me/trust_musicvideo" target="_blank" rel="noopener">
       <div class="logo-wrap">
-        <img id="lowerGif" class="logo-img gif" src="2down.gif" width="1080" height="960" alt="Lower animation">
-        <img id="lowerPng" class="logo-img png" src="2down.png" width="1080" height="960" alt="Lower logo">
+        <img id="lowerGif" class="logo-img gif" src="2down.gif" alt="Lower animation">
+        <img id="lowerPng" class="logo-img png" src="2down.png" alt="Lower logo">
       </div>
     </a>
   </div>
@@ -91,26 +92,18 @@
 <script>
 function scaleLogos() {
   const container = document.getElementById('logos-inner');
-  // Use visualViewport if available for mobile browsers
   const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
   const viewportWidth = window.innerWidth;
 
-  const scale = Math.min(
-    (viewportWidth * 0.98)/1080,
-    (viewportHeight * 0.98)/1920, // total stacked height
-    1
-  );
+  // Scale to fit both stacked GIFs inside viewport
+  const scale = Math.min((viewportWidth*0.98)/1080, (viewportHeight*0.98)/1920, 1);
   container.style.transform = `scale(${scale})`;
-  container.parentElement.style.display = 'flex';
-  container.parentElement.style.alignItems = 'center';
-  container.parentElement.style.justifyContent = 'center';
 }
 
-// Preload PNGs to prevent flash
+// Preload PNGs to avoid flashes
 function preloadPNGs() {
-  const imgs = [document.getElementById('upperPng'), document.getElementById('lowerPng')];
-  imgs.forEach(img=>{
-    if(!img.complete) {
+  [document.getElementById('upperPng'), document.getElementById('lowerPng')].forEach(img=>{
+    if(!img.complete){
       const tmp = new Image();
       tmp.src = img.src;
     }
@@ -140,13 +133,12 @@ function crossfade() {
 }
 
 window.addEventListener('DOMContentLoaded', ()=>{
-  scaleLogos();
   preloadPNGs();
+  scaleLogos();
 
-  // Start crossfade timer immediately (2.9s)
+  // Start crossfade after 2.9s
   setTimeout(crossfade, 2900);
 
-  // Also scale on resize
   window.addEventListener('resize', scaleLogos);
   if(window.visualViewport){
     window.visualViewport.addEventListener('resize', scaleLogos);
