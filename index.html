@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>C-Vyaz</title>
 
 <!-- Preload PNGs -->
@@ -11,109 +10,106 @@
 <link rel="preload" as="image" href="2down.png">
 
 <style>
-  *,*::before,*::after { box-sizing: border-box; }
+  *, *::before, *::after { box-sizing: border-box; }
 
-  html,body {
-    margin:0; padding:0;
-    height:100%; width:100%;
-    background:white;
-    overflow:hidden;
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    background-color: white;
+    overflow: hidden;
   }
 
   .center-logos {
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    height:100%;
-    width:100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    overflow: visible;
   }
 
   .logos-inner {
-    position:relative;
-    width:1080px;
-    height:1920px;
-    transform-origin:center center;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:white;
+    width: 1080px;
+    height: 1920px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transform-origin: center center;
+  }
+
+  .logo-wrap {
+    position: relative;
+    width: 972px;  /* 1080 * 0.9 */
+    height: 864px; /* 960 * 0.9 */
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Lower logo offset */
+  .lower-wrap {
+    transform: translateY(-100px);
   }
 
   .logo-img {
-    position:absolute;
-    top:0; left:0;
-    width:100%; height:100%;
-    object-fit:contain;
-    display:block;
-    backface-visibility:hidden;
-    transform:translateZ(0);
-    will-change:opacity;
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    will-change: opacity;
   }
 
-  .gif { z-index:2; opacity:1; }
-  .png {
-    z-index:5;
-    opacity:0;
-    transition:opacity 0.1s linear;
-    pointer-events:none; /* allow clicks to pass through */
-  }
+  .gif { z-index: 2; opacity: 1; }
+  .png { z-index: 1; opacity: 0; }
+  #upperPng { pointer-events: none; }
 
-  .overlay-pngs {
-    position:absolute;
-    top:0; left:0;
-    width:100%; height:100%;
-    display:flex;
-    flex-direction:column;
-  }
-
-  .overlay-pngs img {
-    width:100%;
-    height:50%;
-    object-fit:contain;
-    display:block;
-  }
-
-  .click-zone {
-    position:absolute;
-    bottom:0; left:0;
-    width:100%; height:50%;
-    z-index:10; /* above everything else */
-  }
+  a.logo-link { display: block; padding: 0; margin: 0; border: none; outline: none; }
 </style>
 </head>
 
 <body>
 <div class="center-logos">
   <div class="logos-inner" id="logos-inner">
-    <!-- Combined GIF -->
-    <img id="mainGif" class="logo-img gif" src="1upper2down.gif" alt="Combined animation">
-
-    <!-- Overlay with two PNG halves -->
-    <div id="pngOverlay" class="logo-img png">
-      <div class="overlay-pngs">
-        <img src="1upper.png" alt="Upper PNG">
-        <img src="2down.png" alt="Lower PNG">
-      </div>
+    <!-- Upper logo -->
+    <div class="logo-wrap">
+      <img id="upperGif" class="logo-img gif" src="1upper.gif" alt="Upper animation">
+      <img id="upperPng" class="logo-img png" src="1upper.png" alt="Upper logo">
     </div>
 
-    <!-- Clickable lower half -->
-    <a href="https://t.me/trust_musicvideo"
-       target="_blank" rel="noopener"
-       class="click-zone"></a>
+    <!-- Lower logo (clickable) -->
+    <a class="logo-link" href="https://t.me/trust_musicvideo" target="_blank" rel="noopener">
+      <div class="logo-wrap lower-wrap">
+        <img id="lowerGif" class="logo-img gif" src="2down.gif" alt="Lower animation">
+        <img id="lowerPng" class="logo-img png" src="2down.png" alt="Lower logo">
+      </div>
+    </a>
   </div>
 </div>
 
 <script>
 function scaleLogos() {
   const container = document.getElementById('logos-inner');
-  const vh = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
-  const vw = window.innerWidth;
-  const scale = Math.min((vw * 0.98) / 1080, (vh * 0.97) / 1920, 1);
+  const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  const viewportWidth = window.innerWidth;
+
+  const scale = Math.min((viewportWidth * 0.98) / 1080, (viewportHeight * 0.98) / 1920, 1);
   container.style.transform = `scale(${scale})`;
+
+  // Adjust offset to scale proportionally
+  const lowerWrap = document.querySelector('.lower-wrap');
+  lowerWrap.style.transform = `translateY(${-100 * scale}px)`;
 }
 
 function preloadPNGs() {
-  document.querySelectorAll('.overlay-pngs img').forEach(img => {
+  [document.getElementById('upperPng'), document.getElementById('lowerPng')].forEach(img => {
     if (!img.complete) {
       const tmp = new Image();
       tmp.src = img.src;
@@ -122,12 +118,23 @@ function preloadPNGs() {
 }
 
 function crossfade() {
-  const gif = document.getElementById('mainGif');
-  const overlay = document.getElementById('pngOverlay');
-  overlay.style.opacity = '1';
+  const uGif = document.getElementById('upperGif');
+  const lGif = document.getElementById('lowerGif');
+  const uPng = document.getElementById('upperPng');
+  const lPng = document.getElementById('lowerPng');
+
+  uPng.style.transition = 'opacity 0.1s linear';
+  lPng.style.transition = 'opacity 0.1s linear';
+  uPng.style.opacity = '1';
+  lPng.style.opacity = '1';
+
   setTimeout(() => {
-    gif.style.opacity = '0';
-    setTimeout(() => { gif.style.display = 'none'; }, 120);
+    uGif.style.opacity = '0';
+    lGif.style.opacity = '0';
+    setTimeout(() => {
+      uGif.style.display = 'none';
+      lGif.style.display = 'none';
+    }, 120);
   }, 100);
 }
 
@@ -135,13 +142,12 @@ window.addEventListener('DOMContentLoaded', () => {
   preloadPNGs();
   scaleLogos();
 
-  // Random fade start between 3.0–3.5 s
-  const delay = 3000 + Math.random() * 500;
-  setTimeout(crossfade, delay);
+  setTimeout(crossfade, 2900);
 
   window.addEventListener('resize', scaleLogos);
-  if (window.visualViewport)
+  if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', scaleLogos);
+  }
 });
 </script>
 </body>
