@@ -23,7 +23,6 @@
 
   .center-logos {
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100%;
@@ -33,7 +32,7 @@
 
   .logos-inner {
     width: 1080px;
-    height: 1920px; /* stacked GIFs: 2x 960 */
+    height: 1920px; /* stacked GIFs: 2 x 960 */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -48,6 +47,7 @@
     height: 960px;
     margin: 0;
     padding: 0;
+    background-color: white; /* hides any flash */
   }
 
   .logo-img {
@@ -63,7 +63,7 @@
   }
 
   .gif { z-index: 2; opacity: 1; }
-  .png { z-index: 1; opacity: 0; }
+  .png { z-index: 1; opacity: 0; transition: opacity 0.05s linear; }
   #upperPng { pointer-events: none; }
 
   a.logo-link { display: block; padding: 0; margin: 0; border: none; outline: none; }
@@ -92,55 +92,64 @@
 <script>
 function scaleLogos() {
   const container = document.getElementById('logos-inner');
-  const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  const viewportHeight = (window.visualViewport ? window.visualViewport.height : window.innerHeight) * 0.97; // prevents Android cropping
   const viewportWidth = window.innerWidth;
 
   // Scale to fit both stacked GIFs inside viewport
-  const scale = Math.min((viewportWidth*0.98)/1080, (viewportHeight*0.98)/1920, 1);
+  const scale = Math.min((viewportWidth * 0.98) / 1080, (viewportHeight * 0.98) / 1920, 1);
   container.style.transform = `scale(${scale})`;
 }
 
-// Preload PNGs to avoid flashes
 function preloadPNGs() {
-  [document.getElementById('upperPng'), document.getElementById('lowerPng')].forEach(img=>{
-    if(!img.complete){
+  [document.getElementById('upperPng'), document.getElementById('lowerPng')].forEach(img => {
+    if (!img.complete) {
       const tmp = new Image();
       tmp.src = img.src;
     }
   });
 }
 
-// Fade PNGs in and hide GIFs
-function crossfade() {
+// Wait until both GIFs are fully loaded before starting fade timer
+function waitForGIFsAndFade() {
   const uGif = document.getElementById('upperGif');
   const lGif = document.getElementById('lowerGif');
   const uPng = document.getElementById('upperPng');
   const lPng = document.getElementById('lowerPng');
+  let loaded = 0;
 
-  uPng.style.transition = 'opacity 0.1s linear';
-  lPng.style.transition = 'opacity 0.1s linear';
-  uPng.style.opacity = '1';
-  lPng.style.opacity = '1';
+  function tryStart() {
+    loaded++;
+    if (loaded === 2) {
+      // both GIFs are loaded — start fade timer after 2.9s
+      setTimeout(() => {
+        uPng.style.opacity = '1';
+        lPng.style.opacity = '1';
+        setTimeout(() => {
+          uGif.style.opacity = '0';
+          lGif.style.opacity = '0';
+          setTimeout(() => {
+            uGif.style.display = 'none';
+            lGif.style.display = 'none';
+          }, 100);
+        }, 60);
+      }, 2900);
+    }
+  }
 
-  setTimeout(()=>{
-    uGif.style.opacity = '0';
-    lGif.style.opacity = '0';
-    setTimeout(()=>{
-      uGif.style.display = 'none';
-      lGif.style.display = 'none';
-    },120);
-  },100);
+  uGif.addEventListener('load', tryStart);
+  lGif.addEventListener('load', tryStart);
+
+  // fallback in case load events fire too early
+  if (uGif.complete && lGif.complete) tryStart();
 }
 
-window.addEventListener('DOMContentLoaded', ()=>{
+window.addEventListener('DOMContentLoaded', () => {
   preloadPNGs();
   scaleLogos();
-
-  // Start crossfade after 2.9s
-  setTimeout(crossfade, 2900);
+  waitForGIFsAndFade();
 
   window.addEventListener('resize', scaleLogos);
-  if(window.visualViewport){
+  if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', scaleLogos);
   }
 });
